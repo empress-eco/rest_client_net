@@ -1,197 +1,71 @@
-# FrappeRestClient.Net
-[![NuGet](https://img.shields.io/nuget/v/FrappeRestClient.Net.svg?label=NuGet)](https://www.nuget.org/packages/FrappeRestClient.Net/)
-[![Build status](https://ci.appveyor.com/api/projects/status/9w5vjt7yq2cpbo1u/branch/main?svg=true)](https://ci.appveyor.com/project/yemikudaisi/frapperestclient-net/branch/main)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<p align="center">
+  <img src="https://empress.eco/images/logo.png" alt="Empress Logo">
+</p>
 
-.Net REST client for [Frappe Framework](https://frappeframework.com/)
+<p align="center">
+Empower your .NET development with a robust REST client designed to simplify your interaction with online resources.
+</p>
 
-## Basic Usage
+<p align="center">
+<a href="https://empress.eco/">Official Website</a> · <a href="https://github.com/empress-eco/rest_client_net/issues">Report Bug</a> · <a href="https://github.com/empress-eco/rest_client_net/issues">Request Feature</a>
+</p>
 
-### Create the Client
+## 🚀 About The Project
 
-```cs
-using Frappe.Net
+Empress REST client for .NET is a comprehensive library that simplifies the process of making RESTful requests, managing authentication, and handling database operations. It's an indispensable tool for developers seeking to streamline their .NET development workflow.
 
-var frappe = new Frappe("https://base-url.com/");
+### 💎 Key Features
+
+- **Versatile Authentication**: Supports Token Based, Password Based, and Access Token methods.
+- **Debugging Mode**: HTTP Request Logging for efficient troubleshooting.
+- **Comprehensive Database Functions**: Includes functions for Listing Documents, Getting Count, Getting Single Document, and much more.
+- **Fluent Style Syntax**: Ensures easy and intuitive use.
+
+## 🛠️ Technical Stack and Setup Instructions
+
+### Prerequisites
+
+- .NET installed on your system.
+
+### Installation
+
+Clone the repository to your local machine:
+
+```sh
+git clone https://github.com/empress-eco/rest_client_net.git
 ```
 
-### Test Connection to Frappe Site
+Install the package via NuGet Package Manager:
 
-To ping a Frappe Site use the ```PingAsync``` method.
-
-```cs
-...
-var res = await frappe.PingAsync()
-Console.WriteLine(res) // pong
+```sh
+Install-Package EmpressRestClient.Net
 ```
 
-### Debug
+## 📖 Usage
 
-When the debug mode is on, Frappe.Net logs all HTTP requests in debug console
-
-```cs
-var frappe = new Frappe("https://base-url.com/", true);
-```
-
-### Authentication
-
-Frappe.Net supports all [Frappe Framework](https://frappeframework.com/) [REST](https://frappeframework.com/docs/user/en/api/rest) authentication methods. It attempts to validate credentials once supplied, as such all athentication functions are asynchronous. All authentication methods support fluent style coding.
-
-#### 1. Token Based Authentication
+Create a client, authenticate, and you're ready to make requests:
 
 ```cs
-frappe.UseTokenAync("api-key", "api-secret");
+using Empress.Net;
+
+var Empress = new Empress("https://base-url.com/");
+await Empress.UseTokenAync("api-key", "api-secret");
 ```
 
-#### 2. Password Based 
+For further details, refer to our [Official Documentation](https://grow.empress.eco/).
 
-Logging in with password yields cookie data of type ```IDictionary<string, string>``` that contains the keys ```sid```, ```system_user```, ```full_name```, ```user_id``` and ```user_image```. Session data is maintained, so there is no need to supply username and password again for subsequent requests.
+## 🤝 Contribution Guidelines
 
-```cs
-var cookies = await frappe.UsePasswordAync("email-or-username", "password");
-Console.WriteLine(cookies[Cookies.FieldNames.UserId]); // Administrator
-```
+We welcome and appreciate contributions from the community! Here's how you can contribute:
 
-#### 3. Access Token 
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-```cs
-frappe.UseAccessTokenAync("oauth-access-token");
-```
+## 📜 License and Acknowledgements
 
-### Get Logged In User
+The project is under the MIT License. Your contributions are also licensed under the MIT License. 
 
-```cs
-var user = await frappe.UseTokenAync("api-key", "api-secret")
-	.GetLoggedUserAsync()
-
-Console.WriteLine(user); // administrator
-```
-
-### DB Funcitons
-
-The methods implemented corellates to RESTful requests that are mapped to the `/api/resource` in Frappe. Also, some other ```frappe.client``` APImethods are implemented here.
-
-#### Listing Documents
-
-To get a list of records of a DocType use ```Frappe.Db.GetListAsync()```
-
-```cs
-var frappe = new Frappe(baseUrl);
-await frappe.UseTokenAsync(apiKey, apiSecret);
-string[] fields = { 
-    "name", 
-    "description",
-    "status"
-};
-                
-string[,] filters = { 
-    { 
-        "status", "=", "Open" 
-    } 
-};
-
-var todos = await frappe.Db.GetListAsync(
-    "ToDo", 
-    fields:fields, 
-    filters:filters,
-    orderBy: "modified desc",
-    limitStart: 10,
-    limitPageLenght: 30,
-);
-
-foreach ( var t in todos) {
-    console.WriteLine($"{t.name} -> {t.description} : {t.status}");
-}
-```
-
-By default Frappe will return 20 records and will only fetch the name of the records unless fields  supplied. 
-
-#### Get Count
-
-```cs
-string[,] filters = { 
-    { 
-        "status", "=", "Closed" 
-    } 
-};
-int count = frappe.Db.GetCount("ToDo"); // count all close ToDo
-```
-
-#### Get Single Document
-
-To get a document with a document name use the ```GetAsync``` method.
-```cs
-...
-var doc = await frappe.Db.GetAsync("ToDo", "340a5acab3");
-Console.WriteLine(doc.name); // 340a5acab3
-```
-
-This method will throw a ```KeyNotFoundException``` if the document for the suplied name is not found.
-
-#### Get a Value from Document
-
-```cs
-...
-string[,] filter = { { "name", "=", "bafc4c81fe" } };
-var value = await frappe.Db.GetValueAsync("ToDo", "description", filter);
-Console.WriteLine(value) // Some ToDo description
-```
-
-#### Get Single Value from Single-Type Document
-
-```cs
-...
-var value = await frappe.Db.GetSingleValueAsync("Website Settings", "website_theme");
-Console.WriteLine(doc.name) // Standard
-```
-
-#### Set a Single Value in a Document
-
-```cs
-...
-// returns the updated document as a ```dynamic``` object
-await frappe.Db.SetValueAsync("ToDo", doc.name.ToObject<string>(), "description", data);
-```
- 
-#### Insert Document
-
-```cs
-...
-var doc = await frappe.Db.InsertAsync(
-    new Dictionary<string, object> {
-        { "doctype", "ToDo"},
-        { "description", desc}
-    }
-);
-Console.WriteLine(doc.description.ToString()); // desc
-```
-
-#### Insert Many Document
-
-```cs
-...
-Dictionary<string, object>[] manyDocs = {
-    new Dictionary<string, object> {
-        { "doctype", "ToDo"},
-        { "description","Description 1"}
-    },
-    new Dictionary<string, object> {
-        { "doctype", "ToDo"},
-        { "description", "Description 2"}
-    }
-};
-var docs = await frappe.Db.InsertManyAsync(manyDocs);
-Console.WriteLine((int)docs.Count); // 2
-```
-
-#### Update (save) an existing Document
-
-```cs
-var doc = await Frappe.Db.GetAsync("ToDo", "xxxxxx");
-doc.description = "new description";
-// Note that the document received from Get will not contain a
-// ```doctype``` property for  hence the need to add it before save
-doc.doctype = "ToDo"; 
-await Frappe.Db.SaveAsync(doc);
-var updateDoc = await Frappe.Db.GetAsync("ToDo", doc.name.ToString());
-```
+We express our deep gratitude to the Empress Community, the creators of the essential tools that power this project. Their innovation and dedicated work have been crucial in building the foundations and functionalities we rely on. We are profoundly grateful for their pioneering work and ongoing support.
